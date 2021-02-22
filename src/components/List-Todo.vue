@@ -9,19 +9,11 @@
             </div>
         </div>
     <!-- Create todo section -->
-        <div class="row m-1 p-3">
+        <div class="row m-1 p-3" >
             <div class="col col-11 mx-auto">
                 <div class="row bg-white rounded shadow-sm p-2 add-todo-wrapper align-items-center justify-content-center">
                     <div class="col">
-                        <input class="form-control form-control-lg border-0 add-todo-input bg-transparent rounded" type="text" placeholder="Add new .." v-model="todo.Tarefa">
-                    </div>
-                    <div class="col-auto m-0 px-2 d-flex align-items-center">
-                        <label class="text-secondary my-2 p-0 px-1 view-opt-label due-date-label d-none">Due date not set</label>
-                        <i class="fa fa-calendar my-2 px-1 text-primary btn due-date-button" data-toggle="tooltip" data-placement="bottom" title="Set a Due date"></i>
-                        <i class="fa fa-calendar-times-o my-2 px-1 text-danger btn clear-due-date-button d-none" data-toggle="tooltip" data-placement="bottom" title="Clear Due date"></i>
-                    </div>
-                    <div class="col-auto px-0 mx-0 mr-2">
-                        <button type="button" class="btn btn-primary" @click="Adicionar">Add</button>
+                        <input class="form-control form-control-lg border-0 add-todo-input bg-transparent rounded" type="text" placeholder="Add new .." v-model="newTodo" @keyup.enter="Adicionar">
                     </div>
                 </div>
             </div>
@@ -29,14 +21,31 @@
         <div class="list-todo">
         <b-form-group>
             <b-list-group>
-                <b-list-group-item v-for="todo of todo" :key="todo.Tarefa" class="todo-items">
-                    {{ todo.id }} - {{ todo.Tarefa }}
+                <b-list-group-item v-for="(todo,index) in todo" :key="todo.id" :todo="todo" >
+                    {{ todo.id }} - {{ todo.newTodo }} - {{ doneSucess }} - {{ index }}
+                    <b-container class="bv-example-row">
+                        <b-row>
+                            <ul v-if="doneSucess">
+                                 <b-form-checkbox size="sm" @click="feito()" :checked="todo.doneSucess">Feito</b-form-checkbox>
+                                
+                                
+                            </ul>
+                           
+                        </b-row>
+                    </b-container>
                     <div class="row m-1 p-3">
+                        
+                            
+                        
                         <div style="display: flex;right:200px">
-                            <b-button pill variant="danger" @click="confirmDel">Excluir</b-button>
+                            <b-button pill variant="danger" @click="onOpenDelete()"
+                            >
+                                Excluir</b-button>
+                            <dialog-delete />
                         </div>
                         <div class="col-auto px-0 mx-0 mr-2">
-                            <b-button pill variant="primary" @click="confirmDon">Concluir</b-button>
+                            <b-button pill variant="primary" v-on:click="Editar()">Editar</b-button>
+                           
                         </div>
                     </div>
                    
@@ -50,42 +59,85 @@
 <script>
 import Todo from '@/Service/Todo';
 
+
 export default {
+   
     data(){
         return{
-            id: Number,
-            newTodo: String,
             
-            todo:[]
+                id:'',
+                newTodo:'',
+                doneSucess:true,
+               
+                eddit:null,
+                edditId:0,
+            
+            
+            todo:[],
+            openDialog:false
         }
 
     },
-    methods:{
-        
+    methods:{   
+        List(){
+            Todo.todoList().then(res =>{
+                this.todo = res.data
+                console.log(res.data)
+            })
+        },
         Adicionar(){
-            Todo.todoPost({
-                id:this.todo.id,
-                Tarefa:this.todo.newTodo
-            })
-            this.idForTodo++,
-            this.todo.Tarefa
-            
-        },
-        confirmDel(){
-            Todo.todoDel({
-                id:this.todo.id
-            })
+            var data = {
+                newTodo:this.newTodo,
+                eddit:this.eddit,
+                edditId:this.edditId,
+                done:this.done
+            }
+            if(this.newTodo.trim() !==""){
+                if(this.eddit)
+                {
+                    this.todo[this.edditId] = this.newTodo,
+                    this.infoTodo.newTodo = "",
+                    this.eddit = false
+                    console.log(data)
+                    Todo.todoSave(data)
+                    this.List();
+                    alert('atualizado')
+                    this.newTodo = ''
+               
+                }else{
+                    this.todo.push(this.newTodo),
 
+                    console.log(data)
+                    Todo.todoSave(data)
+                    this.List();
+                    alert('Salvo')
+                    this.newTodo = ''
+                
+                }
+            }
         },
-        confirmDon(){
-
-        }
-    },
+            onOpenDelete(index) {
+                this.todo.splice(index,1)
+            },
+            Editar(index){
+                this.newTodo = this.todo[index],
+                this.eddit = true,
+                this.edditId = index
+            },
+            Feito(todo){
+                todo.doneSucess = true
+                
+                
+            }
+        },
     mounted(){
-        Todo.todoList().then(res =>{
-            this.todo = res.data
-        })
-    }
+        this.List()
+    },
+    computed:{
+        checkTodos(){
+            return this.todo.filter(x => x.done)
+        }
+    }    
 }
 </script>
 <style scoped>

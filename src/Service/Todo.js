@@ -2,13 +2,18 @@ import { api } from './api';
 
 export default {
     todoList:() =>{
+    
         return api.get('/TodoList')
     },
-    todoPost:() =>{
-        return api.post('/TodoList')
+    todoSave:(todo) =>{
+        return api.post('/TodoList',todo)
     },
-    todoDel:() =>{
-        return api.delete('/TodoList/')
+    todoUp:(id) =>{
+        return api.put('/TodoList', id)
+    },
+    todoDel:(id) =>{
+        return api.delete('/Todo/todoDel/'+id )
     }
+    
     
 }

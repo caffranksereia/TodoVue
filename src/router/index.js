@@ -8,10 +8,11 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
+    path: '/Todo',
     name: 'todo',
     component: ListTodo
   },
+ 
   {
     path: '/about',
     name: 'About',
